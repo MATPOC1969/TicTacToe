@@ -1,4 +1,7 @@
-"""Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
+
+"""Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей
+Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
+
 
 from operator import truediv
 import tkinter as tk
@@ -46,6 +49,7 @@ def on_click(row, col):
         
         if check_winner():
             messagebox.showinfo("Победа!", f"Игрок {current_player} победил!")
+
             # Отключаем все кнопки после победы
             for i in range(3):
                 for j in range(3):
@@ -56,6 +60,7 @@ def on_click(row, col):
             for i in range(3):
                 for j in range(3):
                     buttons[i][j]["state"] = "disabled"
+
         else:
             current_player = "O" if current_player == "X" else "X"
     else:
