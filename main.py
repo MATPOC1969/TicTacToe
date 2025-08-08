@@ -1,3 +1,5 @@
+"""Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей"""
+
 from operator import truediv
 import tkinter as tk
 from tkinter import messagebox
@@ -22,6 +24,13 @@ def check_winner():
         return True
     return False
 
+def check_draw():
+    for i in range(3):
+        for j in range(3):
+            if buttons[i][j]["text"] == "":
+                return False
+    return True
+
 def on_click(row, col):
     global current_player
     if buttons[row][col]["text"] == "":
@@ -29,7 +38,11 @@ def on_click(row, col):
         if check_winner():
             messagebox.showinfo("Победа!", f"Игрок {current_player} победил!")
             window.quit()
-        current_player = "O" if current_player == "X" else "X"
+        elif check_draw():
+            messagebox.showinfo("Ничья!", "Игра закончилась вничью!")
+            window.quit()
+        else:
+            current_player = "O" if current_player == "X" else "X"
     else:
         messagebox.showinfo("Ошибка!", "Эта клетка уже занята!")
 
