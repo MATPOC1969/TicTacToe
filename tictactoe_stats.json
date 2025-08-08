@@ -1,0 +1,14 @@
+{
+  "X_wins": 1,
+  "O_wins": 0,
+  "draws": 1,
+  "total_games": 2,
+  "current_streak": {
+    "X": 0,
+    "O": 0
+  },
+  "longest_streak": {
+    "X": 1,
+    "O": 0
+  }
+}

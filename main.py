@@ -1,10 +1,10 @@
-
-"""Игра до трех побед — реализуй систему, в которой игра продолжается до трех побед одного из игроков
-Счетчик побед — добавь счетчик побед для каждого игрока (самое масштабное расширение проекта)
-Выбор для игрока — добавь возможность выбрать, чем будет играть игрок (крестиком или ноликом), перед началом игрыУлучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя
-
-Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей
-Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
+"""Крестики-нолики с полной функциональностью:
+- Игра до трех побед
+- Счетчик побед и статистика
+- Выбор символа для игрока
+- Улучшенный интерфейс
+- Обработка ничьих
+- Сброс игрового поля"""
 
 from operator import truediv
 import tkinter as tk
@@ -14,10 +14,8 @@ import os
 
 # Создание главного окна
 window = tk.Tk()
-
-=======
-window.title("🏆 Крестики-нолики - Статистика")
-window.geometry("500x600")
+window.title("🏆 Крестики-нолики - Полная версия")
+window.geometry("500x900")
 window.configure(bg="#2c3e50")
 window.resizable(False, False)
 
@@ -29,14 +27,18 @@ x = (window.winfo_screenwidth() // 2) - (width // 2)
 y = (window.winfo_screenheight() // 2) - (height // 2)
 window.geometry(f"{width}x{height}+{x}+{y}")
 
-
 # Переменные игры
 current_player = "X"
 buttons = []
 game_in_progress = False
 
+# Счет раундов (для игры до 3 побед)
+round_scores = {
+    "X": 0,
+    "O": 0
+}
 
-# Статистика
+# Статистика (общая)
 stats = {
     "X_wins": 0,
     "O_wins": 0,
@@ -91,6 +93,19 @@ def update_stats_display():
     x_longest_label.config(text=f"🏅 Макс. серия X: {stats['longest_streak']['X']}")
     o_longest_label.config(text=f"🏅 Макс. серия O: {stats['longest_streak']['O']}")
 
+def update_round_display():
+    """Обновляет отображение счета раундов"""
+    x_round_label.config(text=f"🎯 X: {round_scores['X']}")
+    o_round_label.config(text=f"🎯 O: {round_scores['O']}")
+    
+    # Определяем лидера
+    if round_scores['X'] > round_scores['O']:
+        leader_label.config(text="👑 Лидер: X", fg="#e74c3c")
+    elif round_scores['O'] > round_scores['X']:
+        leader_label.config(text="👑 Лидер: O", fg="#f39c12")
+    else:
+        leader_label.config(text="⚖️ Ничья", fg="#3498db")
+
 def reset_stats():
     """Сбрасывает всю статистику"""
     if messagebox.askyesno("Сброс статистики", "Вы уверены, что хотите сбросить всю статистику?"):
@@ -106,21 +121,27 @@ def reset_stats():
         save_stats()
         update_stats_display()
 
-def new_game():
-    """Начинает новую игру"""
+def new_series():
+    """Начинает новую серию игр"""
+    global round_scores
+    if messagebox.askyesno("Новая серия", "Начать новую серию игр? Текущий счет будет сброшен."):
+        round_scores = {"X": 0, "O": 0}
+        update_round_display()
+        reset_board()
+
+def reset_board():
+    """Сбрасывает игровое поле"""
     global current_player, game_in_progress
     current_player = "X"
     game_in_progress = True
     
-    # Очищаем поле
     for i in range(3):
         for j in range(3):
             buttons[i][j]["text"] = ""
             buttons[i][j]["state"] = "normal"
+            buttons[i][j].configure(fg="#ecf0f1", font=("Arial", 32))
     
-    # Обновляем информацию о текущем игроке
     current_player_label.config(text=f"🎯 Ход игрока: {current_player}")
-
 
 def check_winner():
     """Проверяет, есть ли победитель"""
@@ -137,55 +158,28 @@ def check_winner():
     return False
 
 def check_draw():
-
-
     """Проверяет ничью"""
-
-
     for i in range(3):
         for j in range(3):
             if buttons[i][j]["text"] == "":
                 return False
     return True
 
-
-def reset_board():
-    """Сбрасывает игровое поле"""
-    global current_player, game_in_progress
-    current_player = "X"
-    game_in_progress = True
-    
-    for i in range(3):
-        for j in range(3):
-            buttons[i][j]["text"] = ""
-            buttons[i][j]["state"] = "normal"
-            buttons[i][j].configure(fg="black", font=("Arial", 40))
-    
-    current_player_label.config(text=f"🎯 Ход игрока: {current_player}")
-
-def new_series():
-    """Начинает новую серию игр"""
-    global round_scores
-    if messagebox.askyesno("Новая серия", "Начать новую серию игр? Текущий счет будет сброшен."):
-        round_scores = {"X": 0, "O": 0}
-        update_score_display()
-        reset_board()
-
-def update_score_display():
-    """Обновляет отображение счета"""
-    x_score_label.config(text=f"🏆 X: {round_scores['X']}")
-    o_score_label.config(text=f"🏆 O: {round_scores['O']}")
-    
-    # Определяем лидера
-    if round_scores['X'] > round_scores['O']:
-        leader_label.config(text="👑 Лидер: X", fg="#e74c3c")
-    elif round_scores['O'] > round_scores['X']:
-        leader_label.config(text="👑 Лидер: O", fg="#f39c12")
-    else:
-        leader_label.config(text="⚖️ Ничья", fg="#3498db")
+def update_streaks(winner):
+    """Обновляет серии побед"""
+    if winner == "X":
+        stats['current_streak']['X'] += 1
+        stats['current_streak']['O'] = 0
+        if stats['current_streak']['X'] > stats['longest_streak']['X']:
+            stats['longest_streak']['X'] = stats['current_streak']['X']
+    elif winner == "O":
+        stats['current_streak']['O'] += 1
+        stats['current_streak']['X'] = 0
+        if stats['current_streak']['O'] > stats['longest_streak']['O']:
+            stats['longest_streak']['O'] = stats['current_streak']['O']
 
 def on_click(row, col):
-
+    """Обработчик клика по кнопке"""
     global current_player, game_in_progress
     
     if not game_in_progress:
@@ -201,10 +195,14 @@ def on_click(row, col):
             buttons[row][col].configure(fg="#f39c12", font=("Arial", 36, "bold"))
         
         if check_winner():
-
             # Победа в раунде
             round_scores[current_player] += 1
-            update_score_display()
+            stats[f'{current_player}_wins'] += 1
+            stats['total_games'] += 1
+            update_streaks(current_player)
+            save_stats()
+            update_stats_display()
+            update_round_display()
             
             game_in_progress = False
             
@@ -236,45 +234,44 @@ def on_click(row, col):
                     
         elif check_draw():
             # Ничья в раунде
+            stats['draws'] += 1
+            stats['total_games'] += 1
+            stats['current_streak']['X'] = 0
+            stats['current_streak']['O'] = 0
+            save_stats()
+            update_stats_display()
+            
             game_in_progress = False
             messagebox.showinfo("🤝 Ничья в раунде!", "Этот раунд закончился вничью!")
-
             
             # Отключаем все кнопки
             for i in range(3):
                 for j in range(3):
                     buttons[i][j]["state"] = "disabled"
-
             
             # Предлагаем продолжить серию
             if messagebox.askyesno("Следующий раунд", "Начать следующий раунд?"):
                 reset_board()
         else:
             # Продолжаем раунд
-
             current_player = "O" if current_player == "X" else "X"
             current_player_label.config(text=f"🎯 Ход игрока: {current_player}")
     else:
         messagebox.showinfo("⚠️ Ошибка!", "Эта клетка уже занята!")
 
-
 # Загружаем статистику
 load_stats()
-
 
 # Создание интерфейса
 # Заголовок
 title_label = tk.Label(
     window,
-
     text="🏆 КРЕСТИКИ-НОЛИКИ",
     font=("Arial", 20, "bold"),
-
     bg="#2c3e50",
     fg="#ecf0f1"
 )
 title_label.pack(pady=10)
-
 
 # Панель статистики
 stats_frame = tk.Frame(window, bg="#34495e", relief="raised", bd=2)
@@ -310,7 +307,6 @@ o_wins_label = tk.Label(
     fg="#f39c12"
 )
 o_wins_label.pack(side="left", padx=10)
-
 
 o_percent_label = tk.Label(
     main_stats_frame,
@@ -392,25 +388,87 @@ o_longest_label = tk.Label(
 )
 o_longest_label.pack(side="left", padx=5)
 
+# Панель счета раундов
+round_frame = tk.Frame(window, bg="#34495e", relief="raised", bd=2)
+round_frame.pack(fill="x", padx=10, pady=5)
+
+round_title_label = tk.Label(
+    round_frame,
+    text="🎯 СЧЕТ СЕРИИ (до 3 побед)",
+    font=("Arial", 12, "bold"),
+    bg="#34495e",
+    fg="#ecf0f1"
+)
+round_title_label.pack(pady=5)
+
+round_score_frame = tk.Frame(round_frame, bg="#34495e")
+round_score_frame.pack(pady=5)
+
+x_round_label = tk.Label(
+    round_score_frame,
+    text=f"🎯 X: {round_scores['X']}",
+    font=("Arial", 14, "bold"),
+    bg="#34495e",
+    fg="#e74c3c"
+)
+x_round_label.pack(side="left", padx=20)
+
+vs_label = tk.Label(
+    round_score_frame,
+    text="VS",
+    font=("Arial", 12, "bold"),
+    bg="#34495e",
+    fg="#ecf0f1"
+)
+vs_label.pack(side="left", padx=20)
+
+o_round_label = tk.Label(
+    round_score_frame,
+    text=f"🎯 O: {round_scores['O']}",
+    font=("Arial", 14, "bold"),
+    bg="#34495e",
+    fg="#f39c12"
+)
+o_round_label.pack(side="left", padx=20)
+
+leader_label = tk.Label(
+    round_frame,
+    text="⚖️ Ничья",
+    font=("Arial", 10, "bold"),
+    bg="#34495e",
+    fg="#3498db"
+)
+leader_label.pack(pady=5)
+
 # Кнопки управления
 controls_frame = tk.Frame(window, bg="#2c3e50")
 controls_frame.pack(pady=10)
 
-new_game_button = tk.Button(
+new_round_button = tk.Button(
     controls_frame,
-    text="🆕 Новая игра",
+    text="🔄 Новый раунд",
     font=("Arial", 12, "bold"),
     bg="#27ae60",
     fg="white",
-    command=new_game
+    command=reset_board
 )
-new_game_button.pack(side="left", padx=5)
+new_round_button.pack(side="left", padx=5)
+
+new_series_button = tk.Button(
+    controls_frame,
+    text="🏁 Новая серия",
+    font=("Arial", 12),
+    bg="#e74c3c",
+    fg="white",
+    command=new_series
+)
+new_series_button.pack(side="left", padx=5)
 
 reset_stats_button = tk.Button(
     controls_frame,
     text="🗑️ Сбросить статистику",
     font=("Arial", 12),
-    bg="#e74c3c",
+    bg="#8e44ad",
     fg="white",
     command=reset_stats
 )
@@ -430,25 +488,17 @@ current_player_label.pack(pady=5)
 game_frame = tk.Frame(window, bg="#2c3e50")
 game_frame.pack(pady=10)
 
-
-
-# Создаем игровое поле
 for i in range(3):
     row = []
     for j in range(3):
-
         button = tk.Button(
             game_frame,
             text="",
             font=("Arial", 32),
             width=4,
             height=2,
-
-
             bg="#34495e",
             fg="#ecf0f1",
-
-
             relief="raised",
             bd=3,
             command=lambda i=i, j=j: on_click(i, j)
@@ -457,7 +507,6 @@ for i in range(3):
         row.append(button)
     buttons.append(row)
 
-
 # Инструкция
 instruction_label = tk.Label(
     window,
@@ -465,13 +514,13 @@ instruction_label = tk.Label(
     font=("Arial", 10),
     bg="#2c3e50",
     fg="#bdc3c7",
-    wraplength=350
+    wraplength=450
 )
 instruction_label.pack(pady=10)
 
 # Инициализация
-update_score_display()
+update_stats_display()
+update_round_display()
 reset_board()
-
 
 window.mainloop()
