@@ -1,8 +1,9 @@
 
-"""Улучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя
+"""Выбор для игрока — добавь возможность выбрать, чем будет играть игрок (крестиком или ноликом), перед началом игрыУлучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя
 
 Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей
 Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
+
 
 
 
@@ -11,46 +12,97 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 
-# Создание главного окна
-window = tk.Tk()
-
-window.title("🎮 Крестики-нолики")
-window.geometry("400x500")
-window.configure(bg="#2c3e50")
-window.resizable(False, False)
-
-# Центрирование окна на экране
-window.update_idletasks()
-width = window.winfo_width()
-height = window.winfo_height()
-x = (window.winfo_screenwidth() // 2) - (width // 2)
-y = (window.winfo_screenheight() // 2) - (height // 2)
-window.geometry(f"{width}x{height}+{x}+{y}")
 
 # Переменные игры
 current_player = "X"
 buttons = []
-move_count = 0
+player_symbol = "X"  # Символ игрока
+computer_symbol = "O"  # Символ компьютера
 
-# Стили и цвета
-COLORS = {
-    "bg": "#2c3e50",
-    "button_bg": "#34495e",
-    "button_fg": "#ecf0f1",
-    "button_active": "#3498db",
-    "x_color": "#e74c3c",
-    "o_color": "#f39c12",
-    "title_bg": "#1abc9c",
-    "title_fg": "#ffffff"
-}
+def show_symbol_selection():
+    """Показывает диалог выбора символа для игрока"""
+    global player_symbol, computer_symbol
+    
+    # Создаем диалоговое окно
+    dialog = tk.Toplevel()
+    dialog.title("Выбор символа")
+    dialog.geometry("300x200")
+    dialog.resizable(False, False)
+    dialog.transient(window)  # Делаем диалог модальным
+    dialog.grab_set()  # Захватываем фокус
+    
+    # Центрируем диалог
+    dialog.update_idletasks()
+    x = (dialog.winfo_screenwidth() // 2) - (300 // 2)
+    y = (dialog.winfo_screenheight() // 2) - (200 // 2)
+    dialog.geometry(f"300x200+{x}+{y}")
+    
+    # Заголовок
+    title_label = tk.Label(dialog, text="Выберите ваш символ:", font=("Arial", 14, "bold"))
+    title_label.pack(pady=20)
+    
+    # Функция выбора X
+    def choose_x():
+        global player_symbol, computer_symbol
+        player_symbol = "X"
+        computer_symbol = "O"
+        dialog.destroy()
+        start_game()
+    
+    # Функция выбора O
+    def choose_o():
+        global player_symbol, computer_symbol
+        player_symbol = "O"
+        computer_symbol = "X"
+        dialog.destroy()
+        start_game()
+    
+    # Кнопки выбора
+    button_frame = tk.Frame(dialog)
+    button_frame.pack(pady=20)
+    
+    x_button = tk.Button(
+        button_frame,
+        text="X (Крестик)",
+        font=("Arial", 16, "bold"),
+        width=8,
+        height=2,
+        command=choose_x
+    )
+    x_button.pack(side="left", padx=10)
+    
+    o_button = tk.Button(
+        button_frame,
+        text="O (Нолик)",
+        font=("Arial", 16, "bold"),
+        width=8,
+        height=2,
+        command=choose_o
+    )
+    o_button.pack(side="left", padx=10)
+    
+    # Ждем закрытия диалога
+    dialog.wait_window()
 
-def reset_game():
+def start_game():
+    """Запускает игру после выбора символа"""
     global current_player
+    
+    # Устанавливаем первого игрока (всегда X начинает)
     current_player = "X"
-    for i in range(3):
-        for j in range(3):
-            buttons[i][j]["text"] = ""
-            buttons[i][j]["state"] = "normal"
+    
+    # Обновляем заголовок окна с информацией о выборе
+    window.title(f"Крестики-нолики - Вы играете за {player_symbol}")
+    
+    # Показываем информацию о выборе
+    info_label = tk.Label(
+        window,
+        text=f"Вы играете за: {player_symbol} | Компьютер играет за: {computer_symbol}",
+        font=("Arial", 10),
+        fg="blue"
+    )
+    info_label.grid(row=0, column=0, columnspan=3, pady=5)
+
 
 def check_winner():
     for i in range(3):
@@ -78,32 +130,15 @@ def on_click(row, col):
         buttons[row][col]["text"] = current_player
         
 
-        # Стилизация кнопки в зависимости от игрока
-        if current_player == "X":
-            buttons[row][col].configure(
-                fg=COLORS["x_color"],
-                font=("Arial", 36, "bold"),
-                bg=COLORS["button_bg"]
-            )
-        else:
-            buttons[row][col].configure(
-                fg=COLORS["o_color"],
-                font=("Arial", 36, "bold"),
-                bg=COLORS["button_bg"]
-            )
-        
-        move_count += 1
-        move_label.config(text=f"Ход: {move_count}")
-        
         if check_winner():
-            messagebox.showinfo("🎉 Победа!", f"Игрок {current_player} победил!")
+            winner = "Вы" if current_player == player_symbol else "Компьютер"
+            messagebox.showinfo("Победа!", f"{winner} победил!")
             window.quit()
         elif check_draw():
-            messagebox.showinfo("🤝 Ничья!", "Игра закончилась вничью!")
+            messagebox.showinfo("Ничья!", "Игра закончилась вничью!")
             window.quit()
         else:
             current_player = "O" if current_player == "X" else "X"
-            player_label.config(text=f"Ход игрока: {current_player}")
 
     else:
         messagebox.showinfo("⚠️ Ошибка!", "Эта клетка уже занята!")
@@ -134,6 +169,7 @@ player_label = tk.Label(
 )
 player_label.pack(side="left")
 
+
 move_label = tk.Label(
     info_frame,
     text="Ход: 0",
@@ -147,10 +183,12 @@ move_label.pack(side="right")
 game_frame = tk.Frame(window, bg=COLORS["bg"])
 game_frame.pack(pady=20)
 
+
 # Создаем игровое поле
 for i in range(3):
     row = []
     for j in range(3):
+
 
         button = tk.Button(
             game_frame,
@@ -182,5 +220,6 @@ hint_label = tk.Label(
 hint_label.pack()
 
 # Запуск игры
+
 
 window.mainloop()
