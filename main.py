@@ -1,9 +1,11 @@
 
-"""Счетчик побед — добавь счетчик побед для каждого игрока (самое масштабное расширение проекта)
+"""Игра до трех побед — реализуй систему, в которой игра продолжается до трех побед одного из игроков
+Счетчик побед — добавь счетчик побед для каждого игрока (самое масштабное расширение проекта)
 Выбор для игрока — добавь возможность выбрать, чем будет играть игрок (крестиком или ноликом), перед началом игрыУлучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя
 
 Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей
 Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
+
 from operator import truediv
 import tkinter as tk
 from tkinter import messagebox
@@ -12,6 +14,8 @@ import os
 
 # Создание главного окна
 window = tk.Tk()
+
+=======
 window.title("🏆 Крестики-нолики - Статистика")
 window.geometry("500x600")
 window.configure(bg="#2c3e50")
@@ -25,10 +29,12 @@ x = (window.winfo_screenwidth() // 2) - (width // 2)
 y = (window.winfo_screenheight() // 2) - (height // 2)
 window.geometry(f"{width}x{height}+{x}+{y}")
 
+
 # Переменные игры
 current_player = "X"
 buttons = []
 game_in_progress = False
+
 
 # Статистика
 stats = {
@@ -115,6 +121,7 @@ def new_game():
     # Обновляем информацию о текущем игроке
     current_player_label.config(text=f"🎯 Ход игрока: {current_player}")
 
+
 def check_winner():
     """Проверяет, есть ли победитель"""
     for i in range(3):
@@ -131,7 +138,9 @@ def check_winner():
 
 def check_draw():
 
+
     """Проверяет ничью"""
+
 
     for i in range(3):
         for j in range(3):
@@ -140,21 +149,43 @@ def check_draw():
     return True
 
 
-def update_streaks(winner):
-    """Обновляет серии побед"""
-    if winner == "X":
-        stats['current_streak']['X'] += 1
-        stats['current_streak']['O'] = 0
-        if stats['current_streak']['X'] > stats['longest_streak']['X']:
-            stats['longest_streak']['X'] = stats['current_streak']['X']
-    elif winner == "O":
-        stats['current_streak']['O'] += 1
-        stats['current_streak']['X'] = 0
-        if stats['current_streak']['O'] > stats['longest_streak']['O']:
-            stats['longest_streak']['O'] = stats['current_streak']['O']
+def reset_board():
+    """Сбрасывает игровое поле"""
+    global current_player, game_in_progress
+    current_player = "X"
+    game_in_progress = True
+    
+    for i in range(3):
+        for j in range(3):
+            buttons[i][j]["text"] = ""
+            buttons[i][j]["state"] = "normal"
+            buttons[i][j].configure(fg="black", font=("Arial", 40))
+    
+    current_player_label.config(text=f"🎯 Ход игрока: {current_player}")
+
+def new_series():
+    """Начинает новую серию игр"""
+    global round_scores
+    if messagebox.askyesno("Новая серия", "Начать новую серию игр? Текущий счет будет сброшен."):
+        round_scores = {"X": 0, "O": 0}
+        update_score_display()
+        reset_board()
+
+def update_score_display():
+    """Обновляет отображение счета"""
+    x_score_label.config(text=f"🏆 X: {round_scores['X']}")
+    o_score_label.config(text=f"🏆 O: {round_scores['O']}")
+    
+    # Определяем лидера
+    if round_scores['X'] > round_scores['O']:
+        leader_label.config(text="👑 Лидер: X", fg="#e74c3c")
+    elif round_scores['O'] > round_scores['X']:
+        leader_label.config(text="👑 Лидер: O", fg="#f39c12")
+    else:
+        leader_label.config(text="⚖️ Ничья", fg="#3498db")
 
 def on_click(row, col):
-    """Обработчик клика по кнопке"""
+
     global current_player, game_in_progress
     
     if not game_in_progress:
@@ -170,57 +201,80 @@ def on_click(row, col):
             buttons[row][col].configure(fg="#f39c12", font=("Arial", 36, "bold"))
         
         if check_winner():
-            # Победа
-            stats[f'{current_player}_wins'] += 1
-            stats['total_games'] += 1
-            update_streaks(current_player)
-            save_stats()
-            update_stats_display()
+
+            # Победа в раунде
+            round_scores[current_player] += 1
+            update_score_display()
             
             game_in_progress = False
-            messagebox.showinfo("🎉 Победа!", f"Игрок {current_player} победил!")
             
-            # Отключаем все кнопки
-            for i in range(3):
-                for j in range(3):
-                    buttons[i][j]["state"] = "disabled"
+            # Проверяем, достиг ли кто-то 3 побед
+            if round_scores[current_player] >= 3:
+                messagebox.showinfo("🎉 Финальная победа!", 
+                                  f"Игрок {current_player} выиграл серию со счетом {round_scores['X']}:{round_scores['O']}!")
+                
+                # Отключаем все кнопки
+                for i in range(3):
+                    for j in range(3):
+                        buttons[i][j]["state"] = "disabled"
+                
+                # Предлагаем начать новую серию
+                if messagebox.askyesno("Новая серия", "Хотите начать новую серию игр?"):
+                    new_series()
+            else:
+                messagebox.showinfo("🎯 Победа в раунде!", 
+                                  f"Игрок {current_player} выиграл этот раунд!\nСчет: X - {round_scores['X']}, O - {round_scores['O']}")
+                
+                # Отключаем все кнопки
+                for i in range(3):
+                    for j in range(3):
+                        buttons[i][j]["state"] = "disabled"
+                
+                # Предлагаем продолжить серию
+                if messagebox.askyesno("Следующий раунд", "Начать следующий раунд?"):
+                    reset_board()
                     
         elif check_draw():
-            # Ничья
-            stats['draws'] += 1
-            stats['total_games'] += 1
-            stats['current_streak']['X'] = 0
-            stats['current_streak']['O'] = 0
-            save_stats()
-            update_stats_display()
-            
+            # Ничья в раунде
             game_in_progress = False
-            messagebox.showinfo("🤝 Ничья!", "Игра закончилась вничью!")
+            messagebox.showinfo("🤝 Ничья в раунде!", "Этот раунд закончился вничью!")
+
             
             # Отключаем все кнопки
             for i in range(3):
                 for j in range(3):
                     buttons[i][j]["state"] = "disabled"
+
+            
+            # Предлагаем продолжить серию
+            if messagebox.askyesno("Следующий раунд", "Начать следующий раунд?"):
+                reset_board()
         else:
-            # Продолжаем игру
+            # Продолжаем раунд
+
             current_player = "O" if current_player == "X" else "X"
             current_player_label.config(text=f"🎯 Ход игрока: {current_player}")
     else:
         messagebox.showinfo("⚠️ Ошибка!", "Эта клетка уже занята!")
 
+
 # Загружаем статистику
 load_stats()
+
 
 # Создание интерфейса
 # Заголовок
 title_label = tk.Label(
     window,
+
     text="🏆 КРЕСТИКИ-НОЛИКИ",
     font=("Arial", 20, "bold"),
+
     bg="#2c3e50",
     fg="#ecf0f1"
 )
 title_label.pack(pady=10)
+
 
 # Панель статистики
 stats_frame = tk.Frame(window, bg="#34495e", relief="raised", bd=2)
@@ -256,6 +310,7 @@ o_wins_label = tk.Label(
     fg="#f39c12"
 )
 o_wins_label.pack(side="left", padx=10)
+
 
 o_percent_label = tk.Label(
     main_stats_frame,
@@ -389,8 +444,10 @@ for i in range(3):
             width=4,
             height=2,
 
+
             bg="#34495e",
             fg="#ecf0f1",
+
 
             relief="raised",
             bd=3,
@@ -401,9 +458,20 @@ for i in range(3):
     buttons.append(row)
 
 
-# Инициализация отображения статистики
-update_stats_display()
-new_game()
+# Инструкция
+instruction_label = tk.Label(
+    window,
+    text="💡 Играйте до 3 побед! Каждый раунд - это отдельная игра в крестики-нолики.",
+    font=("Arial", 10),
+    bg="#2c3e50",
+    fg="#bdc3c7",
+    wraplength=350
+)
+instruction_label.pack(pady=10)
+
+# Инициализация
+update_score_display()
+reset_board()
 
 
 window.mainloop()
