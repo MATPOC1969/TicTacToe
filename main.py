@@ -1,4 +1,10 @@
-"""Улучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя"""
+
+"""Улучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя
+
+Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей
+Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
+
+
 
 from operator import truediv
 import tkinter as tk
@@ -7,6 +13,7 @@ from tkinter import ttk
 
 # Создание главного окна
 window = tk.Tk()
+
 window.title("🎮 Крестики-нолики")
 window.geometry("400x500")
 window.configure(bg="#2c3e50")
@@ -37,6 +44,14 @@ COLORS = {
     "title_fg": "#ffffff"
 }
 
+def reset_game():
+    global current_player
+    current_player = "X"
+    for i in range(3):
+        for j in range(3):
+            buttons[i][j]["text"] = ""
+            buttons[i][j]["state"] = "normal"
+
 def check_winner():
     for i in range(3):
         if buttons[i][0]["text"] == buttons[i][1]["text"] == buttons[i][2]["text"] != "":
@@ -62,6 +77,7 @@ def on_click(row, col):
     if buttons[row][col]["text"] == "":
         buttons[row][col]["text"] = current_player
         
+
         # Стилизация кнопки в зависимости от игрока
         if current_player == "X":
             buttons[row][col].configure(
@@ -88,6 +104,7 @@ def on_click(row, col):
         else:
             current_player = "O" if current_player == "X" else "X"
             player_label.config(text=f"Ход игрока: {current_player}")
+
     else:
         messagebox.showinfo("⚠️ Ошибка!", "Эта клетка уже занята!")
 
@@ -130,9 +147,11 @@ move_label.pack(side="right")
 game_frame = tk.Frame(window, bg=COLORS["bg"])
 game_frame.pack(pady=20)
 
+# Создаем игровое поле
 for i in range(3):
     row = []
     for j in range(3):
+
         button = tk.Button(
             game_frame,
             text="",
@@ -163,4 +182,5 @@ hint_label = tk.Label(
 hint_label.pack()
 
 # Запуск игры
+
 window.mainloop()
