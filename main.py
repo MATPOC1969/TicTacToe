@@ -1,4 +1,9 @@
-"""Счетчик побед — добавь счетчик побед для каждого игрока (самое масштабное расширение проекта)"""
+
+"""Счетчик побед — добавь счетчик побед для каждого игрока (самое масштабное расширение проекта)
+Выбор для игрока — добавь возможность выбрать, чем будет играть игрок (крестиком или ноликом), перед началом игрыУлучшение интерфейса — поработай над дизайном игры, сделай её более привлекательной и удобной для пользователя
+
+Вариант ничьей — если все клетки поля заполнены, но победителя нет, показывай сообщение о ничьей
+Добавить функциональность сброса игрового поля, чтобы можно было начать новую игру без перезапуска программы"""
 from operator import truediv
 import tkinter as tk
 from tkinter import messagebox
@@ -125,12 +130,15 @@ def check_winner():
     return False
 
 def check_draw():
+
     """Проверяет ничью"""
+
     for i in range(3):
         for j in range(3):
             if buttons[i][j]["text"] == "":
                 return False
     return True
+
 
 def update_streaks(winner):
     """Обновляет серии побед"""
@@ -367,17 +375,23 @@ current_player_label.pack(pady=5)
 game_frame = tk.Frame(window, bg="#2c3e50")
 game_frame.pack(pady=10)
 
+
+
+# Создаем игровое поле
 for i in range(3):
     row = []
     for j in range(3):
+
         button = tk.Button(
             game_frame,
             text="",
             font=("Arial", 32),
             width=4,
             height=2,
+
             bg="#34495e",
             fg="#ecf0f1",
+
             relief="raised",
             bd=3,
             command=lambda i=i, j=j: on_click(i, j)
@@ -386,8 +400,10 @@ for i in range(3):
         row.append(button)
     buttons.append(row)
 
+
 # Инициализация отображения статистики
 update_stats_display()
 new_game()
+
 
 window.mainloop()
